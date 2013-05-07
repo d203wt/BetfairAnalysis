@@ -5,6 +5,8 @@
 #include <iomanip>
 #include <cstring>
 #include <iostream>
+#include <sstream>  
+#include <algorithm> 
 #include <vector>
 #include <stdlib.h>
 #include "TTree.h"
@@ -30,7 +32,7 @@ public:
   
   
   //convert string for date to a double
-  double ConvertTime(std::string);
+  void ConvertTime(std::string);
   
   //getter functions
   std::string getCountry(){return m_country;};
@@ -54,6 +56,15 @@ private:
   std::string m_actualOff;
   double m_actualOff_d;
 
+  //date
+  int m_day;
+  int m_month;
+  int m_year;
+  
+  double m_hours;
+  double m_minutes;
+  double m_seconds;
+  
   int m_selectionId;
   std::string m_selection;
   double m_odds;

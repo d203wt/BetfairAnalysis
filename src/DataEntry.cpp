@@ -24,8 +24,8 @@ DataEntry::DataEntry(std::string dataString)
   
   while ((a != NULL) && (keepGoing == true))
   {
-  //std::printf ("%s\n",a);
-    std::cout << "DEBUG 0."<<index<<", a = " << a << std::endl;       
+    //std::printf ("%s\n",a);
+  
     switch(index)
     { 
       case 0: //SPORTS_ID
@@ -44,7 +44,6 @@ DataEntry::DataEntry(std::string dataString)
         m_country = a;
 	if(strcmp(a, "GB") == 0)
 	{ 
-	  std::cout << "Debug: FOUND GB!" << std::endl;
 	  m_isGB = true;
 	}
 	else{
@@ -56,7 +55,7 @@ DataEntry::DataEntry(std::string dataString)
       case 4: //FULL_DESCRIPTION
         m_fullDescription = a;
 	m_isWinOrPlace = testForWinOrPlace(a);
-	if(!m_isWinOrPlace) keepGoing = false;	
+	if(m_isWinOrPlace == false) keepGoing = false;	
         break;
 	 
       case 5: //COURSE
@@ -76,9 +75,8 @@ DataEntry::DataEntry(std::string dataString)
 	 
       case 8: //ACTUAL_OFF	
         m_actualOff = a;
-	//convert the string to a double if GB win or place market
-	
-	m_actualOff_d = ConvertTime(a);
+	//convert the date/time string to a ints/double member variables (private).
+	ConvertTime(a);
         break;
 	 
       case 9: //SELECTION_ID
@@ -128,18 +126,104 @@ DataEntry::DataEntry(std::string dataString)
 
 }
 
-double DataEntry::ConvertTime(std::string timeString){
+
+//Input string is on format "DD-MM-YY HH:MM:SS", so firstly split sting in two, then 
+// split up each half using strtok. 
+void DataEntry::ConvertTime(std::string timeString){
+
+  //split copy in to 2
+  std::stringstream ss(timeString);
+  std::string token;
   
-  char* a;
-  std::cout << "Debug: ConvertTime timeString (input) =  " << timeString << std::endl;
-  char* copy = strdup(timeString.c_str());
-   
-  a = strtok(copy, " ");
-  std::cout << "Debug: ConvertTime a = " <<  a << std::endl;
+  int index = 0;
   
-  return atof(a);
-  
-  
+  while( ss >> token)
+  {
+    //First half of string is the date DD-MM-YYYY 
+    switch(index)
+    {
+      
+      case 0:
+      {
+//	std::cout << "DEBUG case 0, token = " << token << std::endl;
+	char* copy = strdup(token.c_str());
+	char* b = strtok(copy,"-");
+        
+        int index1 = 0;  
+        while(b != NULL)
+        {
+          switch(index1)
+          {
+            case 0:
+	      m_day=atoi(b);
+	      break;
+	 
+            case 1:
+	      m_month = atoi(b);
+	      break;
+
+            case 2:
+	      m_year = atoi(b);
+	      break;
+
+            default:
+	      std::cout << "ERROR - Date is not written in expected format." << std::endl;
+	      exit(0);
+	      break;
+          }
+    
+          b = strtok(NULL, "-");
+          index1++;
+     
+        }
+	
+      }		
+	break;
+	
+      case 1:
+      {
+//	std::cout << "DEBUG case 1, token = " << token << std::endl;
+        char* copy = strdup(token.c_str());
+        char* c = strtok(copy,":");
+
+        int index2 = 0;  
+        while(c != NULL)
+        {
+          switch(index2)
+          {
+            case 0:
+	      m_hours=atof(c);
+	      break;
+	 
+            case 1:
+	      m_minutes = atof(c);
+	      break;
+
+            case 2:
+	      m_seconds = atof(c);
+	      break;
+
+            default:
+	      std::cout << "ERROR - Date is not written in expected format." << std::endl;
+	      exit(0);
+	      break;
+          }
+    
+          c = strtok(NULL, ":");
+          index2++;	
+	}
+	
+      }	
+	break;
+	
+      default:
+	std::cout << "ERROR - Date is not written in expected format." << std::endl;
+	exit(0);
+	break;      
+    }
+    
+  index++;  
+  }  
 }
 
 
@@ -147,10 +231,6 @@ bool DataEntry::testForPlace(std::string testString){
   
   bool isPlace = false;
   if(testString == "TO BE PLACED") isPlace = true;
-  
-  //Debug:
-  std::cout << "Found place market " << std::endl;
-
   return isPlace;
   
 }
@@ -169,25 +249,10 @@ bool DataEntry::testForWinOrPlace(std::string testString)
 {
   
   bool isWinOrPlace = false;
-  int nSlash = 0;
-     
-  char* a;
-  char* copy = strdup(testString.c_str());
-  a = strtok(copy, "");
-
-  while(a != NULL)
-  {
-    a = strtok(NULL, "/"); 
-    nSlash++;       
-  }
-   
-  if(nSlash==1)
-  {
-    //std::cout << "Found a win or place market! " << testString << std::endl;
-    isWinOrPlace = true;
-  }
-     
+  size_t nSlash = std::count(testString.begin(), testString.end(), '/');  
+  if(nSlash ==1) isWinOrPlace = true;
   return isWinOrPlace; 
+  
 }
 
 //Only to be called after the non-default contructor has been used!
