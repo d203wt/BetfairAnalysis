@@ -16,16 +16,16 @@ DataEntry::DataEntry(std::string dataString)
   //always expect same fields in same order?!? if YES use an int to control which field is which;
   int index = 0;
   char* a;
+  char *end_str;
   char* copy = strdup(dataString.c_str());
    
-  a = strtok(copy, ",\"");     
+  a = strtok_r(copy, ",\"", &end_str);     
   
   bool keepGoing = true;
   
   while ((a != NULL) && (keepGoing == true))
   {
     //std::printf ("%s\n",a);
-  
     switch(index)
     { 
       case 0: //SPORTS_ID
@@ -33,7 +33,7 @@ DataEntry::DataEntry(std::string dataString)
         break;
 	 
       case 1: //EVENT_ID
-        m_eventId =  atoi(a);
+        m_eventId =  atof(a);
         break;
 	 
       case 2: //SETTLED_DATE
@@ -74,13 +74,14 @@ DataEntry::DataEntry(std::string dataString)
         break;
 	 
       case 8: //ACTUAL_OFF	
-        m_actualOff = a;
 	//convert the date/time string to a ints/double member variables (private).
 	ConvertTime(a);
-        break;
+	m_actualOff = (m_hours*60.0*60.0) + (m_minutes*60.0) + m_seconds;
+
+	break;
 	 
       case 9: //SELECTION_ID
-        m_selectionId = atoi(a);
+  	m_selectionId = atof(a);	
         break;
 	 
       case 10: //SELECTION
@@ -100,11 +101,13 @@ DataEntry::DataEntry(std::string dataString)
 	break;
 	 
       case 14: //LATEST_TAKEN
-        m_latestTaken = a;
+	ConvertLastTaken(a);
+	m_lastTaken = (m_hoursLast*60.0*60.0) + (m_minutesLast*60.0) + m_secondsLast;
 	break;
 	 
       case 15: //FIRST_TAKEN
-        m_firstTaken = a;
+	ConvertFirstTaken(a);
+	m_firstTaken = (m_hoursFirst*60.0*60.0) + (m_minutesFirst*60.0) + m_secondsFirst;
 	break;
 	 
       case 16: //WIN_FLAG - Set to true if = 1, false if = 0
@@ -119,8 +122,8 @@ DataEntry::DataEntry(std::string dataString)
 	std::cout << " Error in Splitting string into data fields!" << std::endl; 
 	break;
     }
-     
-    a = strtok(NULL, ",\""); 
+    a = strtok_r(NULL, ",\"",&end_str); 
+
     index++;       
   }    
 
@@ -129,18 +132,18 @@ DataEntry::DataEntry(std::string dataString)
 
 //Input string is on format "DD-MM-YY HH:MM:SS", so firstly split sting in two, then 
 // split up each half using strtok. 
-void DataEntry::ConvertTime(std::string timeString){
+void DataEntry::ConvertTime(const std::string& timeString){
 
   //split copy in to 2
   std::stringstream ss(timeString);
   std::string token;
   
-  int index = 0;
+  int indy= 0;
   
   while( ss >> token)
   {
     //First half of string is the date DD-MM-YYYY 
-    switch(index)
+    switch(indy)
     {
       
       case 0:
@@ -222,9 +225,213 @@ void DataEntry::ConvertTime(std::string timeString){
 	break;      
     }
     
+  indy++;  
+  }  
+}
+
+
+//Input string is on format "DD-MM-YY HH:MM:SS", so firstly split sting in two, then 
+// split up each half using strtok. 
+void DataEntry::ConvertFirstTaken(const std::string& timeString){
+
+  
+  //split copy in to 2
+  std::stringstream ss(timeString);
+  std::string token;
+  
+  int index = 0;
+  
+  while( ss >> token)
+  {
+    //First half of string is the date DD-MM-YYYY 
+    switch(index)
+    {
+      
+      case 0:
+      {
+//	std::cout << "DEBUG case 0, token = " << token << std::endl;
+	char* copy = strdup(token.c_str());
+	char* b = strtok(copy,"-");
+        
+        int index1 = 0;  
+        while(b != NULL)
+        {
+          switch(index1)
+          {
+            case 0:
+	      m_dayFirst=atoi(b);
+	      break;
+	 
+            case 1:
+	      m_monthFirst = atoi(b);
+	      break;
+
+            case 2:
+	      m_yearFirst = atoi(b);
+	      break;
+
+            default:
+	      std::cout << "ERROR - Date is not written in expected format." << std::endl;
+	      exit(0);
+	      break;
+          }
+    
+          b = strtok(NULL, "-");
+          index1++;
+     
+        }
+	
+      }		
+	break;
+	
+      case 1:
+      {
+//	std::cout << "DEBUG case 1, token = " << token << std::endl;
+        char* copy = strdup(token.c_str());
+        char* c = strtok(copy,":");
+
+        int index2 = 0;  
+        while(c != NULL)
+        {
+          switch(index2)
+          {
+            case 0:
+	      m_hoursFirst=atof(c);
+	      break;
+	 
+            case 1:
+	      m_minutesFirst = atof(c);
+	      break;
+
+            case 2:
+	      m_secondsFirst = atof(c);
+	      break;
+
+            default:
+	      std::cout << "ERROR - Date is not written in expected format." << std::endl;
+	      exit(0);
+	      break;
+          }
+    
+          c = strtok(NULL, ":");
+          index2++;	
+	}
+	
+      }	
+	break;
+	
+      default:
+	std::cout << "ERROR - Date is not written in expected format." << std::endl;
+	exit(0);
+	break;      
+    }
+    
+  index++;  
+  }
+
+}
+
+
+//Input string is on format "DD-MM-YY HH:MM:SS", so firstly split sting in two, then 
+// split up each half using strtok. 
+void DataEntry::ConvertLastTaken(const std::string& timeString){
+
+  //split copy in to 2
+  std::stringstream ss(timeString);
+  std::string token;
+  
+  int index = 0;
+  
+  while( ss >> token)
+  {
+    //First half of string is the date DD-MM-YYYY 
+    switch(index)
+    {
+      
+      case 0:
+      {
+//	std::cout << "DEBUG case 0, token = " << token << std::endl;
+	char* copy = strdup(token.c_str());
+	char* b = strtok(copy,"-");
+        
+        int index1 = 0;  
+        while(b != NULL)
+        {
+          switch(index1)
+          {
+            case 0:
+	      m_dayLast=atoi(b);
+	      break;
+	 
+            case 1:
+	      m_monthLast = atoi(b);
+	      break;
+
+            case 2:
+	      m_yearLast = atoi(b);
+	      break;
+
+            default:
+	      std::cout << "ERROR - Date is not written in expected format." << std::endl;
+	      exit(0);
+	      break;
+          }
+    
+          b = strtok(NULL, "-");
+          index1++;
+     
+        }
+	
+      }		
+	break;
+	
+      case 1:
+      {
+//	std::cout << "DEBUG case 1, token = " << token << std::endl;
+        char* copy = strdup(token.c_str());
+        char* c = strtok(copy,":");
+
+        int index2 = 0;  
+        while(c != NULL)
+        {
+          switch(index2)
+          {
+            case 0:
+	      m_hoursLast=atof(c);
+	      break;
+	 
+            case 1:
+	      m_minutesLast = atof(c);
+	      break;
+
+            case 2:
+	      m_secondsLast = atof(c);
+	      break;
+
+            default:
+	      std::cout << "ERROR - Date is not written in expected format." << std::endl;
+	      exit(0);
+	      break;
+          }
+    
+          c = strtok(NULL, ":");
+          index2++;	
+	}
+	
+      }	
+	break;
+	
+      default:
+	std::cout << "ERROR - Date is not written in expected format." << std::endl;
+	exit(0);
+	break;      
+    }
+    
   index++;  
   }  
 }
+
+
 
 
 bool DataEntry::testForPlace(std::string testString){
@@ -284,7 +491,7 @@ void DataEntry::print()
  std::cout << std::setw(32) << std::right << " ODDS = " << std::setw(12) << std::left << m_odds << std::endl; 
  std::cout << std::setw(32) << std::right << " NUMBER_BETS = " << std::setw(12) << std::left << m_numberBets << std::endl; 
  std::cout << std::setw(32) << std::right << " VOLUME_MATCHED = " << std::setw(12) << std::left << m_volumeMatched << std::endl; 
- std::cout << std::setw(32) << std::right << " LATEST_TAKEN = " << std::setw(12) << std::left << m_latestTaken << std::endl; 
+ std::cout << std::setw(32) << std::right << " LATEST_TAKEN = " << std::setw(12) << std::left << m_lastTaken << std::endl; 
  std::cout << std::setw(32) << std::right << " FIRST_TAKEN = " << std::setw(12) << std::left << m_firstTaken << std::endl; 
  std::cout << std::setw(32) << std::right << " WIN_FLAG = " << std::setw(12) << std::left << m_winFlag << std::endl; 
  std::cout << std::setw(32) << std::right << " IN_PLAY = " << std::setw(12) << std::left << m_inPlay << std::endl; 

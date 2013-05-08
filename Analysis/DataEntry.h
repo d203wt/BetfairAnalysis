@@ -32,8 +32,11 @@ public:
   
   
   //convert string for date to a double
-  void ConvertTime(std::string);
-  
+  void ConvertTime(const std::string&) ;
+  void ConvertFirstTaken(const std::string&);
+  void ConvertLastTaken(const std::string&);
+
+    
   //getter functions
   std::string getCountry(){return m_country;};
   bool getWinFlag(){return m_winFlag;};
@@ -41,37 +44,59 @@ public:
   double getOdds(){return m_odds;};
   double getNumberBets(){return m_numberBets;};
   double getVolumeMatched(){return m_volumeMatched;};
-  int getSelectionId(){return m_selectionId;};
-   
+  double getSelectionId(){return m_selectionId;};
+  double getFirstTaken(){return m_firstTaken;};
+  double getLastTaken(){return m_lastTaken;};
+  double getActualOff(){return m_actualOff;};
+  double getEventId(){return m_eventId;};
+  
 private:
   
   int m_sportsId;
-  int m_eventId;
+  double m_eventId;
   std::string m_settledDate;
   std::string m_country;
   std::string m_fullDescription;
   std::string m_course;
   std::string m_scheduledOff;
   double m_event;
-  std::string m_actualOff;
-  double m_actualOff_d;
 
   //date
   int m_day;
   int m_month;
   int m_year;
+  int m_dayFirst;
+  int m_monthFirst;
+  int m_yearFirst;
+  int m_dayLast;
+  int m_monthLast;
+  int m_yearLast;
   
   double m_hours;
   double m_minutes;
   double m_seconds;
   
-  int m_selectionId;
+  double m_hoursFirst;
+  double m_minutesFirst;
+  double m_secondsFirst;
+  
+  double m_hoursLast;
+  double m_minutesLast;
+  double m_secondsLast;  
+  
+  double m_actualOff;
+  double m_lastTaken;
+  double m_firstTaken;
+  
+  
+  
+  
+  double m_selectionId;
   std::string m_selection;
   double m_odds;
   double m_numberBets;
   double m_volumeMatched;
-  std::string m_latestTaken;
-  std::string m_firstTaken;
+
   bool m_winFlag;
   std::string m_inPlay;
  
@@ -85,25 +110,6 @@ private:
   bool m_isPlace;
   bool m_isWinOrPlace;
 
-  
-//   std::string m_sportsId;
-//   std::string m_eventId;
-//   std::string m_settledDate;
-//   std::string m_country;
-//   std::string m_fullDescription;
-//   std::string m_course;
-//   std::string m_scheduledOff;
-//   std::string m_event;
-//   std::string m_actualOff;
-//   std::string m_selectionId;
-//   std::string m_selection;
-//   std::string m_odds;
-//   std::string m_numberBets;
-//   std::string m_volumeMatched;
-//   std::string m_latestTaken;
-//   std::string m_firstTaken;
-//   std::string m_winFlag;
-//   std::string m_inPlay;
 };
 
 #endif
